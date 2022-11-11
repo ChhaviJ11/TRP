@@ -248,15 +248,11 @@ for times_k in times_dict:
         times_dict[times_k] = {}
 
 final_intervals_list = []
+final_api_intervals_list = []
 total_duration = 0
-api_data={}
-api_data['device_id'] = 12345
-api_data['creation_timestamp'] = int(time.time_ns())
-api_data['data'] = {}
 view_data = {}
 view_data['device_id'] = 12345
 view_data['creation_timestamp'] = int(time.time_ns())
-view_data['data'] = {}
 api_record =[]
 for k in intervals_dict:
     total_duration = 0
@@ -264,28 +260,16 @@ for k in intervals_dict:
     api_record =[]
     if(intervalsLen):
         for key in intervals_dict[k]:
-            api_record.append({'start_time':key['start_time'], 'end_time':key['end_time'], 'duration':key['duration']})
             total_duration = total_duration + key['duration']
-
-    api_data['data'][k] = {
-        'count': intervalsLen,
-        'total_duration': round(total_duration, 5),
-        'data': api_record
-    }
-    view_data['data'][k] ={
-        'count': intervalsLen,
-        'total_duration': round(total_duration, 5),
-        'data': intervals_dict[k]
-    }
+            
     final_intervals_list.append({
-        'channel': k,
+        'name': k,
         'count': intervalsLen,
         'total_duration': round(total_duration, 5),
-        'data': intervals_dict[k]
+        'channelsTimesList': intervals_dict[k]
     })
+    view_data['channels'] = final_intervals_list
 print("viewData:",view_data)
-print("apiData:",api_data)
-
 
 print('')
 print("intervals_dict")
