@@ -97,7 +97,7 @@ def calculateTimeDuration(start_epoch_time, end_epoch_time):
     end_time = epoch_end_time
 
     time_detect = end_epoch_time - start_epoch_time
-    return [time_detect, start_time, end_time]
+    return [time_detect, start_time, end_time,start_sec,end_sec]
 
 def detectCascade(type, img, gray):
 
@@ -109,7 +109,7 @@ def detectCascade(type, img, gray):
         setDetectionIntervals(type, logo)
         cv2ImShow(type, logo, roi_color)
 
-    if type == 'sony_logo' and sony_logo_cascade:
+    elif type == 'sony_logo' and sony_logo_cascade:
         roi_gray = gray[57:57 + 123, 1054:1054 + 123]
         roi_color = img[57:57 + 123, 1054:1054 + 123]
         logo = sony_logo_cascade.detectMultiScale(roi_gray, 1.1, 4)
@@ -117,7 +117,7 @@ def detectCascade(type, img, gray):
         setDetectionIntervals(type, logo)
         cv2ImShow(type, logo, roi_color)
 
-    if type == 'mtv_logo' and mtv_logo_cascade:
+    elif type == 'mtv_logo' and mtv_logo_cascade:
         roi_gray = gray[17:17 + 120, 1090:1090 + 120]
         roi_color = img[17:17 + 120, 1090:1090 + 120]
         logo = mtv_logo_cascade.detectMultiScale(roi_gray, 1.2, 4)
@@ -125,7 +125,7 @@ def detectCascade(type, img, gray):
         setDetectionIntervals(type, logo)
         cv2ImShow(type, logo, roi_color)
 
-    if type == 'zee_logo' and zee_logo_cascade:
+    elif type == 'zee_logo' and zee_logo_cascade:
         roi_gray = gray[11:11 + 181, 965:965 + 181]
         roi_color = img[11:11 + 181, 965:965 + 181]
         logo = zee_logo_cascade.detectMultiScale(roi_gray, 1.1, 4)
@@ -133,10 +133,10 @@ def detectCascade(type, img, gray):
         setDetectionIntervals(type, logo)
         cv2ImShow(type, logo, roi_color)
 
-    if type == 'black_screen':
+    elif type == 'black_screen':
         setDetectionIntervals(type, img)
 
-    if type == 'ad_screen':
+    elif type == 'ad_screen':
         setDetectionIntervals(type, img)
 
     return ''
@@ -186,6 +186,8 @@ def setDetectionIntervals(type, cascade):
             'start_time': calculated_times_dict[type][0][1],
             'end_time': calculated_times_dict[type][calculated_times_listLen - 1][2],
             'duration': round(capture_time_dict[type], 5),
+            'start_time_epoch': calculated_times_dict[type][0][3],
+            'end_time_epoch': calculated_times_dict[type][calculated_times_listLen - 1][4],
         }
     else:
         cascade_captured_dict[type] = False
@@ -241,31 +243,49 @@ for times_k in times_dict:
     if(len(times_dict[times_k]) > 0):
         intervals_dict[times_k].append(times_dict[times_k])
         times_dict[times_k] = {}
+    if (len(times_dict[times_k]) > 0):
+        intervals_dict[times_k].append(times_dict[times_k])
+        times_dict[times_k] = {}
 
 final_intervals_list = []
 total_duration = 0
-final_data = {}
-final_data['device_id'] = 12345
-final_data['creation_timestamp'] = int(time.time_ns())
-final_data['data'] = {}
+api_data={}
+api_data['device_id'] = 12345
+api_data['creation_timestamp'] = int(time.time_ns())
+api_data['data'] = {}
+view_data = {}
+view_data['device_id'] = 12345
+view_data['creation_timestamp'] = int(time.time_ns())
+view_data['data'] = {}
+api_record =[]
 for k in intervals_dict:
     total_duration = 0
     intervalsLen = len(intervals_dict[k])
+    api_record =[]
     if(intervalsLen):
         for key in intervals_dict[k]:
+            api_record.append({'start_time':key['start_time'], 'end_time':key['end_time'], 'duration':key['duration']})
             total_duration = total_duration + key['duration']
 
-    final_data['data'][k] ={'count': intervalsLen,
+    api_data['data'][k] = {
+        'count': intervalsLen,
         'total_duration': round(total_duration, 5),
-        'data': intervals_dict[k]}
-
+        'data': api_record
+    }
+    view_data['data'][k] ={
+        'count': intervalsLen,
+        'total_duration': round(total_duration, 5),
+        'data': intervals_dict[k]
+    }
     final_intervals_list.append({
         'channel': k,
         'count': intervalsLen,
         'total_duration': round(total_duration, 5),
         'data': intervals_dict[k]
     })
-print(final_data)
+print("viewData:",view_data)
+print("apiData:",api_data)
+
 
 print('')
 print("intervals_dict")
